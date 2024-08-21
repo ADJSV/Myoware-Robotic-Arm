@@ -25,14 +25,15 @@ int myroof=500;
 int mini=0;
 int maxi=180;
 
-//test
+//test with forced signal
 float forceVal=250;
 
 void setup() {
   Serial.begin(9600);
-  //Wait 4s to start, usually to manually turn on arm
+  //Wait 4s to start, done to manually turn on arm
   delay(4000);
   pinMode(buttonPin, INPUT_PULLUP);//Set button to change servos
+  
   //Attach Pins to Servos and set them to initial pos
   for(int n = 0; n < 6; n++){
     servo[n].attach(servoPins[n]);
@@ -44,12 +45,13 @@ void setup() {
 
 void loop() {
   //Read sensor and button
-  //float sensorVal= analogRead(sensorPin);
-  float sensorVal=forceVal;
-  //float scaledVal= map(sensorVal, 0, 1000, 0, 180 );
-  buttonVal=digitalRead(buttonPin);
-  //Serial.print("Sensor Value:");
- // Serial.println(sensorVal);
+    float sensorVal= analogRead(sensorPin);
+    //float sensorVal=forceVal; //Used to force a signal for testing
+    buttonVal=digitalRead(buttonPin);
+  
+  //Used to set initial thresholds
+    //Serial.print("Sensor Value:");
+    //Serial.println(sensorVal);
 
 //If the button is pressed switch to next servo
   if (buttonVal==LOW){
@@ -72,6 +74,7 @@ void loop() {
 
 }
 
+//Moves one direction when above myfloor and opposite direction when above myroof
 void moveMotor(float sensorVal, int selection){
   if ((sensorVal>=myfloor) && (sensorVal <=myroof-1)){
     if(servoPosition[selection]>=mini){
@@ -87,9 +90,10 @@ void moveMotor(float sensorVal, int selection){
   }
 }
 
+//Moves one direction when input is above threshold myfloor, when it reaches maxi range goes back automatically to initial position
 void oneDirection(float sensorVal, int selection){
   if (sensorVal>=myfloor){
-    servoPosition[selection]=(servoPosition[selection]==maxi)? minim:servoPosition[selection];
+    servoPosition[selection]=(servoPosition[selection]==maxi)? mini:servoPosition[selection];
     if(servoPosition[selection]<=maxi){
       servoPosition[selection]=servoPosition[selection]+5;
       servo[selection].write(servoPosition[selection]);
@@ -98,6 +102,7 @@ void oneDirection(float sensorVal, int selection){
   }
 }
 
+//Does a full range o motion test for a servo
 void test(int index){
   for (int pos = mini; pos <= maxi; pos += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
@@ -112,7 +117,7 @@ void test(int index){
 }
 
 //Changes global vars mini and maxi to adjust range depending on servo
-voidRangeSelector(int selection){
+void RangeSelector(int selection){
   switch(selection){
     case 1:
       mini=0;
